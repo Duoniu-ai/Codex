@@ -3,7 +3,7 @@
 > 项目:网址发现平台(网址导航站)— 独立产品,SiteIntel 仅为上游数据源
 > 报告日期:2026-08-18(+0800)
 > 执行基线 Git HEAD:de6e954524f1ec4f698cfbc764ec32ad78e16d04
-> 数据库目标:154 服务器 PostgreSQL 14.23 / 数据库 nav_disc(owner=nav_disc_user)/ SSH 隧道只读连接
+> 数据库目标:PRIVATE_SERVER PostgreSQL 14.23 / 数据库 nav_disc(owner=PRIVATE_DATABASE_USER)/ SSH 隧道只读连接
 > 本报告全部结论基于 2026-08-18 对生产库的**实时只读复核**(pg_constraint / information_schema / _prisma_migrations),不依赖历史报告文字
 
 ---
@@ -15,7 +15,7 @@
 | D3 状态 | COMPLETE / **PASS** |
 | Git HEAD(基线) | de6e954524f1ec4f698cfbc764ec32ad78e16d04 |
 | 验收时间 | 2026-08-18(+0800),实时只读复核 |
-| 数据库目标 | nav_disc @ 154.204.176.66:5432(SSH 隧道,只读) |
+| 数据库目标 | nav_disc @ PRIVATE_SERVER:5432(SSH 隧道,只读) |
 | Migration 状态 | `20260817_init` 两条记录:失败记录已官方 `resolve --rolled-back`;成功记录 `applied`;成功记录 checksum 与本地 migration.sql 逐字节一致(`6496160ea6135267d2169087b72ead3ee2e07730cacc571fd79a22bfe9021d21`) |
 
 ---
@@ -80,7 +80,7 @@ evidence 说明:全部 30 项于 2026-08-18 从生产库 `pg_constraint`(`contyp
 
 ## 5. Server Boundary
 
-- `/www/wwwroot/websites` 当前仅包含 `.env`(600 权限,root 属主),**无代码目录**。
+- `/PRIVATE_PATH` 当前仅包含 `.env`(600 权限,root 属主),**无代码目录**。
 - Migration 由本地经 SSH 隧道应用,checksum 证明与本地 migration.sql 逐字节一致。
 - 服务器无代码目录属于 **D10 部署范围,不是 D3 failure**;本轮未部署代码、未修改服务器目录、未修改 `.env`。
 
