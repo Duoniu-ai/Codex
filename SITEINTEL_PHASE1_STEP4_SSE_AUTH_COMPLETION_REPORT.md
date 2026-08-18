@@ -10,6 +10,27 @@
 
 消除 SSE 进度流与状态轮询的无鉴权读取：登录用户按 session 归属校验；匿名调查在创建时签发一次性高强度 stream token（仅存 SHA-256 哈希），EventSource/轮询必须携带 token。
 
+## 1.1 当前 SSE 架构（修改前）
+
+```text
+POST /api/analyze（匿名或登录）→ startInvestigation → Investigation(userId 可空)
+GET /api/analyze/[id]          ← 无鉴权状态轮询
+GET /api/analyze/[id]/stream   ← 无鉴权 SSE（docs 曾标注“无需 Key”）
+```
+
+原安全问题：任何知道 investigationId 的请求（匿名或登录）均可读取任意调查的进度/错误/域名；id 公开出现在报告页证据与批量结果中。
+
+## 1.2 修改后的认证链
+
+```text
+创建：
+  登录用户 → session → userId 写入 Investigation（不签发 token）
+  匿名 → issueStreamToken()（256-bit）→ 仅存 sha256(streamTokenHash) → 明文只回一次
+读取（状态 + SSE 共用 verifyInvestigationAccess）：
+  userId != null → getSessionUser() 必须匹配 → 否则 403
+  userId == null → token（Bearer 或 ?token=）→ timingSafeEqual(sha256(token), streamTokenHash) → 否则 401
+```
+
 ## 2. 实现
 
 ### 2.1 Schema（唯一变更）
@@ -38,7 +59,62 @@
 ### 2.5 日志防护
 
 - 应用层：任何代码路径不 log token / 不含 token 的 URL。
-- nginx：`/api/analyze/` location 增加 `access_log off`（配置备份 `siteintel.cc.conf.bak-step4-20260818`，`nginx -t` + reload 已生效）——EventSource 的 `?token=` 永不进入服务器访问日志。
+- nginx：**评估结论**——Next.js 自身不记录 query，但 nginx access log 会记录完整 query string（含 `?token=`）。因 EventSource 无法携带自定义 Header（浏览器约束），采用比“日志脱敏”更强的方案：`/api/analyze/` location 增加 `access_log off`（配置备份 `siteintel.cc.conf.bak-step4-20260818`，`nginx -t` + reload 已生效）——该路径请求（含 token query）**完全不进入服务器访问日志**。Cloudflare 免费版分析不保留完整 URL。
+
+## 2.6 修改文件清单
+
+```text
+prisma/schema.prisma                                   （+streamTokenHash）
+prisma/migrations/20260818_stream_token_hash/migration.sql（新增，唯一 Schema 变更）
+src/lib/sse-auth.ts                                    （新增：签发/提取/timing-safe 校验/归属判定）
+src/lib/sse-auth.test.ts                               （新增：12 例）
+src/lib/pipeline.ts                                    （startInvestigation 透传 streamTokenHash）
+src/app/api/analyze/route.ts                           （匿名签发 token + 响应 streamToken）
+src/app/api/v1/analyze/route.ts                        （同，v1 匿名路径）
+src/app/api/analyze/[id]/route.ts                      （读取前归属校验）
+src/app/api/analyze/[id]/stream/route.ts               （读取前归属校验）
+src/components/analyze-form.tsx                        （sessionStorage 保存 token）
+src/components/bulk-form.tsx                           （每行 token 保存 + 轮询 Bearer）
+src/components/progress-tracker.tsx                    （Bearer 轮询 + EventSource ?token= + 401 界面）
+src/lib/i18n.ts                                        （progress.unauthorized 中英文）
+src/app/docs/api/page.tsx                              （stream 示例带 token）
+```
+
+## 2.7 Token 生命周期（按授权要求逐项确认）
+
+1. **生成时机**：`POST /api/analyze` / `POST /api/v1/analyze` 创建匿名 Investigation 时（`issueStreamToken`，`randomBytes(32)`，256-bit 密码学安全随机）。
+2. **返回时机**：仅在创建响应 JSON 中返回一次（`streamToken`）；reused（同域并发）不重发——服务端只有哈希，无法也不会再次提供明文。
+3. **仅当前 Investigation 可用**：是——哈希按行存储，校验只与该调查的 `streamTokenHash` 比对；token A 用于调查 B → 401（单测 + 生产 E2E）。
+4. **一次性消费**：**未实现“一次性消费”**。原因：EventSource 断线自动重连与页面轮询都复用同一 token；实现单次消费需删除哈希/状态表，超出最小范围且破坏重连。**实际采用的最小安全策略**（明确声明，不假装）：单次签发（服务器永不重发）+ 单调查绑定 + 哈希存储 + 永不落日志；重放仅对本调查的读操作有效，无任何写权限。
+5. **Analyze 完成后是否继续允许读取**：允许（与修改前一致，仅进度/状态只读信息；token 无写能力）。如需“完成后失效”，后续可单独评估（需 Schema/策略变更，不在本次范围）。
+6. **过期策略**：无 TTL。调查生命周期为秒-分钟级；完成后 token 无实际价值；引入过期机制需要额外字段/清理任务，本次不引入（最小范围）。
+7. **页面刷新**：可用——token 存 `sessionStorage`，同一标签页刷新后仍在；轮询与 EventSource 重建自动携带。
+8. **sessionStorage 行为**：按调查 id 分键（`si_stream_<id>`）；关闭标签页即清除；不跨标签页共享；服务端无明文副本。
+
+## 2.8 测试矩阵（授权文档 §10，20 项对照）
+
+| # | 项 | 结果 |
+|---|---|---|
+| 1 | 正确用户访问自己的 Investigation | ✅ 单测（session 匹配放行） |
+| 2 | 用户 A 访问用户 B | ✅ 单测（403） |
+| 3 | session 缺失 | ✅ 单测（403） |
+| 4 | session 无效 | ✅ 单测（getSessionUser=null → 403） |
+| 5 | 正确 token | ✅ 单测 + 生产 E2E（200） |
+| 6 | 错误 token | ✅ 单测 + staging/prod（401） |
+| 7 | 缺少 token | ✅ 单测 + staging/prod（401） |
+| 8 | 空 token | ✅ 单测（extract null → 401） |
+| 9 | 随机 token | ✅ 单测（wrong token → 401） |
+| 10 | token 对应其他 Investigation | ✅ 单测 + 生产 E2E（401） |
+| 11 | token 不明文进入数据库 | ✅ DB 实证（hash=sha256、非明文、长度 64） |
+| 12 | token 不进入应用日志 | ✅ journal 扫描 0 |
+| 13 | token 不进入错误日志 | ✅ 错误消息不回显 token；扫描 0 |
+| 14 | token 猜测无法访问 | ✅ 256-bit + timing-safe 比对 |
+| 15 | Cross-user access 阻断 | ✅ 单测矩阵 |
+| 16 | 正常 Analyze | ✅ 生产 example.com completed |
+| 17 | 正常 SSE 进度 | ✅ 生产 stream 200 + 事件流 |
+| 18 | Analyze completed | ✅ 轮询到 completed |
+| 19 | Report 页面 | ✅ /website/example.com 200、/api/report 200 |
+| 20 | 现有测试 | ✅ 309/309（+12 新增） |
 
 ## 3. 防伪要求对照
 
