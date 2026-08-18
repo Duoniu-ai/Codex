@@ -85,8 +85,24 @@ A  SITEINTEL_REPOSITORY_CLEANUP_COMPLETION_REPORT.md
 
 ## 9. 最终 HEAD
 
-- 本次 commit：`<见下方 GitHub Publication>`
-- 推送后 local HEAD = origin/main（已验证）。
+- 本次正式化 commit：`4c1c1dc5f2756a50cfc1f78a2522de46e5242ae9`（chore(repo): clean Codex repository to SiteIntel knowledge base）
+- 删除 commit（上一轮已授权）：`9c14d016e1fc725c5a52b75f41446ef231421795`
+- 推送后 local HEAD = origin/main = `4c1c1dc`（已验证）。
+
+## 9.1 Step 1/2/3 报告状态
+
+| 报告 | 状态 |
+|---|---|
+| SITEINTEL_PHASE1_STEP1_BASELINE_COMPLETION_REPORT.md | ✅ 在 Git（947d85b 起 tracked），当前树在位 |
+| SITEINTEL_PHASE1_STEP2_SAFE_FETCH_COMPLETION_REPORT.md | ✅ 在 Git（947d85b 起 tracked），当前树在位 |
+| SITEINTEL_PHASE1_STEP3_REPORT_RATELIMIT_COMPLETION_REPORT.md | ✅ 在 Git（947d85b 起 tracked），当前树在位 |
+
+## 9.2 CURRENT_ARCHITECTURE 文件冲突说明（如实记录）
+
+- 用户指令要求保留 `CURRENT_ARCHITECTURE.md` / `CURRENT_ARCHITECTURE (1).md`；
+- 但双仓库审计已实证：Codex 仓库中的这两个文件内容均为 **「DUONIU.cc 当前架构审计报告」**（非 SiteIntel），已归入非 SiteIntel 类别并于 `9c14d01` 删除（历史保留）；
+- SiteIntel 自己的架构文档 `CURRENT_ARCHITECTURE.md`（内容为「SiteIntel — CURRENT ARCHITECTURE」）**仍在 siteintel 代码仓库 tracked 状态**，未受影响；
+- 结论：Codex 中同名文件为 DUONIU 内容，未恢复；如用户确认需要恢复，可 `git revert 9c14d01`（或从历史检出这两个文件）——等待用户决定，本报告仅记录。
 
 ## 10. 回滚方式
 
@@ -114,10 +130,10 @@ A  SITEINTEL_REPOSITORY_CLEANUP_COMPLETION_REPORT.md
 
 - Repository: Duoniu-ai/Codex
 - Branch: main
-- Commit: 见提交结果（push 后 local HEAD = origin/main）
+- Commit: `4c1c1dc5f2756a50cfc1f78a2522de46e5242ae9`（+ 本报告最终化更新 commit）
 - Tag: 无
 - File: SITEINTEL_REPOSITORY_CLEANUP_COMPLETION_REPORT.md
-- Remote verification: PASS（push 后验证）
+- Remote verification: PASS（local HEAD = origin/main = 4c1c1dc；GitHub 树确认非 SiteIntel 文件 0 残留）
 
 ---
 
