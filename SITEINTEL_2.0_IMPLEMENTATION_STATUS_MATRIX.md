@@ -1,7 +1,7 @@
 # SiteIntel 2.0 Implementation Status Matrix
 
 > 审计配套文档 ｜ 日期：2026-08-23 ｜ 只读 ｜ 状态标记：EXISTING / PARTIAL / PLANNED / RECOMMENDED / CONFLICT / DEPRECATED
-> 依据：真实代码（siteintel main `9eec3de`）+ Schema + 生产数据 + 2.0 架构冻结文档
+> 依据：真实代码（siteintel main `9eec3de`；2026-08-23 Phase 3A–3D 归档更新：生产冻结 `de22a92`）+ Schema + 生产数据 + 2.0 架构冻结文档
 
 ---
 
@@ -92,7 +92,12 @@
 | Phase 0 生产稳定 | ✅ 完成（probe/限流/SSE 收口） |
 | Phase 1 Data Foundation | ✅ Step 1-8 完成（SourceRegistry/保留策略为 Step 9 候选） |
 | Phase 2 Discovery Intelligence | 待授权（方向已定：Data Flywheel） |
-| Phase 3 Website Intelligence（Page） | PLANNED |
+| Phase 3 Website Intelligence | ✅ 3A–3D COMPLETE / PRODUCTION（生产冻结 de22a92） |
+| Phase 3A 首页 | ✅ COMPLETE |
+| Phase 3B 旗舰报告页（3B/3B1/3B2/3B3） | ✅ COMPLETE |
+| Phase 3C 导航与公共组件 | ✅ COMPLETE |
+| Phase 3D 情报层（Identity/Provenance/Evidence/Trust/History/Health） | ✅ COMPLETE / PRODUCTION |
+| Phase 3E | NOT DEFINED / NOT AUTHORIZED |
 | Phase 4 Security Intelligence | PLANNED（被动） |
 | Phase 5 SEO Intelligence | PLANNED（Technical 先行） |
 | Phase 6 Search/Ranking | PLANNED |
