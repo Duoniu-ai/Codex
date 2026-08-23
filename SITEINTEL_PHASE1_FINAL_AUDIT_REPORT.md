@@ -327,7 +327,7 @@ Fact 校验：`schemaVersion=1` 35 条走 canonical 校验；`schemaVersion=0` 3
 
 - Repository: Duoniu-ai/Codex
 - Branch: main
-- Commit: （提交后回填）
+- Commit: 8c8d4c78f904d163644a1abb9b9bef5166db24c0
 - Tag: 无
 - File: SITEINTEL_PHASE1_FINAL_AUDIT_REPORT.md
-- Remote verification: PASS（提交推送后回填）
+- Remote verification: PASS

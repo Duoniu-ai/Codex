@@ -149,7 +149,7 @@ Keyword/Ranking/Opportunity 依赖 Page 级模型与搜索观测（Phase 3/5 前
 
 - Repository: Duoniu-ai/Codex
 - Branch: main
-- Commit: （提交后回填）
+- Commit: 8c8d4c78f904d163644a1abb9b9bef5166db24c0
 - Tag: 无
 - File: SITEINTEL_PHASE2_DIRECTION_DECISION.md
-- Remote verification: PASS（提交推送后回填）
+- Remote verification: PASS
