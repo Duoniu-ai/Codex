@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天网系统 TIANNET · 连接互联网数据，理解网络世界</title>
+<meta name="description" content="天网系统是一套互联网基础设施观测与情报系统，通过数据、证据、关系与变化，观测互联网的每一层。产品包括 SiteIntel、DUONIU、IPCESU。">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* ===== 基础变量 ===== */
+:root{
+  --bg:#0d1117;
+  --bg-deep:#010409;
+  --bg-panel:#161b22;
+  --bg-card:#1e1e1e;
+  --bg-code:#161b22;
+  --border:#30363d;
+  --border-soft:#21262d;
+  --text:#e6edf3;
+  --text-dim:#8b949e;
+  --text-faint:#6e7681;
+  --accent:#3fb950;        /* DeepSeek 绿 */
+  --accent-dim:#2ea043;
+  --blue:#58a6ff;
+  --yellow:#d29922;
+  --red:#f85149;
+  --radius:14px;
+  --radius-sm:8px;
+  --font-sans:"Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ===== 重置与全局 ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+::selection{background:rgba(63,185,80,.28);color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* 网格背景（主题性纹理） */
+.grid-bg{
+  position:relative;
+}
+.grid-bg::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(230,237,243,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,237,243,.035) 1px, transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 0%, #000 40%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%, #000 40%, transparent 100%);
+  pointer-events:none;
+}
+
+/* ===== 布局容器 ===== */
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+section{position:relative;padding:108px 0}
+.section-label{
+  font-family:var(--font-mono);
+  font-size:13px;
+  letter-spacing:.18em;
+  color:var(--accent);
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+.section-label::before{content:"";width:22px;height:1px;background:var(--accent);opacity:.6}
+h2.title{font-size:clamp(28px,4vw,42px);font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.lead{font-size:clamp(16px,2vw,19px);color:var(--text-dim);max-width:640px;margin-top:16px;text-wrap:pretty}
+
+/* ===== 顶部导航 ===== */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,17,23,.82);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.02em}
+.logo-mark{width:26px;height:26px;display:grid;place-items:center;color:#000}
+.logo-mark svg{width:100%;height:100%}
+.logo .en{font-family:var(--font-mono);font-size:12px;color:var(--text-dim);font-weight:500;letter-spacing:.2em}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{
+  font-size:14.5px;color:var(--text-dim);
+  padding:8px 13px;border-radius:8px;transition:color .18s,background .18s;
+}
+.nav-links a:hover{color:var(--text);background:rgba(230,237,243,.06)}
+.nav-links a .en{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);margin-left:6px;letter-spacing:.06em}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:500;
+  color:#0d1117;background:var(--accent);
+  padding:8px 18px;border-radius:8px;
+  transition:background .18s,transform .12s;
+  white-space:nowrap;
+}
+.nav-cta:hover{background:#4cc960;transform:translateY(-1px)}
+.nav-burger{display:none;background:none;border:1px solid var(--border);border-radius:8px;width:40px;height:40px;cursor:pointer;place-items:center;color:var(--text)}
+.nav-burger svg{width:20px;height:20px}
+
+/* ===== Hero ===== */
+.hero{padding:120px 0 96px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center;position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:12.5px;letter-spacing:.14em;color:var(--text-dim);
+  border:1px solid var(--border);border-radius:999px;padding:6px 14px;margin-bottom:26px;
+  background:rgba(22,27,34,.6);
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(63,185,80,.5);animation:pulse 2.4s infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(63,185,80,.45)}
+  70%{box-shadow:0 0 0 8px rgba(63,185,80,0)}
+  100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}
+}
+h1.hero-title{
+  font-size:clamp(42px,6.2vw,74px);
+  font-weight:700;line-height:1.08;letter-spacing:-.02em;
+}
+h1.hero-title .grad{
+  background:linear-gradient(92deg,#3fb950 0%,#8bd5a0 55%,#58a6ff 110%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-sub{font-size:clamp(18px,2.3vw,24px);color:var(--text);font-weight:500;margin-top:22px}
+.hero-desc{font-size:16px;color:var(--text-dim);max-width:520px;margin-top:14px;text-wrap:pretty}
+.hero-ctas{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:15px;font-weight:500;padding:12px 22px;border-radius:10px;cursor:pointer;
+  transition:all .18s;border:1px solid transparent;
+}
+.btn-primary{background:var(--accent);color:#0d1117}
+.btn-primary:hover{background:#4cc960;transform:translateY(-1px)}
+.btn-primary svg{width:16px;height:16px}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--border)}
+.btn-ghost:hover{border-color:#8b949e;background:rgba(230,237,243,.04)}
+.btn-ghost .kbd{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);border:1px solid var(--border);border-radius:5px;padding:1px 6px}
+
+/* 终端窗口 */
+.term{
+  background:var(--bg-deep);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 24px 60px -22px rgba(0,0,0,.7), 0 0 0 1px rgba(63,185,80,.06);
+  overflow:hidden;
+  font-family:var(--font-mono);
+}
+.term-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-panel);
+  padding:12px 16px;border-bottom:1px solid var(--border-soft);
+}
+.term-bar .dots{display:flex;gap:7px}
+.term-bar .dot{width:11px;height:11px;border-radius:50%}
+.term-bar .dot.r{background:#ff5f56}.term-bar .dot.y{background:#ffbd2e}.term-bar .dot.g{background:#27c93f}
+.term-bar .title{margin-left:8px;font-size:12.5px;color:var(--text-faint);letter-spacing:.04em}
+.term-body{padding:22px 22px 24px;font-size:13.5px;line-height:1.9}
+.term-body .prompt{color:var(--accent)}
+.term-body .path{color:var(--blue)}
+.term-body .cmd{color:var(--text)}
+.term-body .dim{color:var(--text-faint)}
+.term-body .ok{color:var(--accent)}
+.term-body .line{white-space:pre-wrap;word-break:break-word}
+.term-body .indent{padding-left:26px}
+.term-cursor{display:inline-block;width:8px;height:16px;background:var(--accent);vertical-align:-2px;animation:blink 1.1s step-end infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+
+/* 终端底部数据条 */
+.hero-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border-soft);border:1px solid var(--border-soft);border-top:none;border-radius:0 0 var(--radius) var(--radius);
+}
+.stat{background:var(--bg-panel);padding:16px 18px}
+.stat .num{font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--accent)}
+.stat .lab{font-size:12px;color:var(--text-faint);margin-top:2px;letter-spacing:.04em}
+
+/* ===== System 系统 ===== */
+#system{background:linear-gradient(180deg,var(--bg) 0%,#0a0e13 100%)}
+.sys-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;margin-top:56px}
+.sys-copy .lead{margin-top:14px}
+.sys-points{margin-top:28px;display:flex;flex-direction:column;gap:14px}
+.sys-point{display:flex;gap:13px;align-items:flex-start;color:var(--text-dim);font-size:15px}
+.sys-point svg{width:18px;height:18px;flex:none;margin-top:3px;color:var(--accent)}
+
+/* 控制台面板（左侧导航 + 右侧内容 —— DeepSeek Harness 式） */
+.console{
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;background:var(--bg-deep);
+  box-shadow:0 22px 50px -24px rgba(0,0,0,.65);
+  font-family:var(--font-mono);
+}
+.console-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--bg-panel);border-bottom:1px solid var(--border-soft);font-size:12.5px;color:var(--text-faint)}
+.console-head .tabs{display:flex;gap:4px}
+.console-head .tab{padding:4px 10px;border-radius:6px;font-size:12px;color:var(--text-dim);cursor:pointer;transition:background .15s,color .15s}
+.console-head .tab.active{background:rgba(63,185,80,.14);color:var(--accent)}
+.console-main{display:grid;grid-template-columns:150px 1fr}
+.console-side{border-right:1px solid var(--border-soft);padding:12px 0;background:var(--bg-panel)}
+.console-side .side-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:12.5px;color:var(--text-dim);cursor:pointer;transition:background .15s,color .15s}
+.console-side .side-item svg{width:15px;height:15px}
+.console-side .side-item.active{background:rgba(63,185,80,.12);color:var(--accent);border-left:2px solid var(--accent)}
+.console-side .side-item:not(.active):hover{background:rgba(230,237,243,.05);color:var(--text)}
+.console-content{padding:18px 20px;font-size:13px}
+.cc-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--border-soft)}
+.cc-row:last-child{border-bottom:none}
+.cc-row .k{color:var(--text-faint)}
+.cc-row .v{color:var(--text)}
+.cc-row .v.ok{color:var(--accent)}
+.cc-row .v.tag{background:rgba(88,166,255,.12);color:var(--blue);padding:1px 8px;border-radius:5px;font-size:11.5px}
+.console-foot{padding:12px 16px;border-top:1px solid var(--border-soft);font-size:12px;color:var(--text-faint);display:flex;align-items:center;gap:8px}
+.console-foot .ok{color:var(--accent)}
+
+/* ===== Data 数据 ===== */
+#data{background:#0a0e13}
+.data-pipe{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:0;
+  margin-top:64px;position:relative;
+}
+.pipe-step{text-align:center;padding:0 10px;position:relative}
+.pipe-step .icon{
+  width:56px;height:56px;margin:0 auto 16px;border-radius:14px;
+  display:grid;place-items:center;background:var(--bg-panel);
+  border:1px solid var(--border);color:var(--accent);
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.pipe-step:hover .icon{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 26px -10px rgba(63,185,80,.35)}
+.pipe-step .icon svg{width:24px;height:24px}
+.pipe-step .n{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-faint);
+  letter-spacing:.12em;display:block;margin-bottom:6px;
+}
+.pipe-step h4{font-size:15px;font-weight:600;margin-bottom:6px}
+.pipe-step h4 .en{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);display:block;letter-spacing:.1em;margin-top:2px;font-weight:500}
+.pipe-step p{font-size:13px;color:var(--text-dim);line-height:1.6}
+.pipe-arrow{
+  position:absolute;top:28px;right:-12px;z-index:2;color:var(--text-faint);
+  width:24px;height:24px;
+}
+.pipe-arrow svg{width:24px;height:24px}
+
+/* 情报 JSON 示例 */
+.data-demo{margin-top:72px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.demo-copy h3{font-size:22px;font-weight:600;margin-bottom:14px}
+.demo-copy p{color:var(--text-dim);font-size:15px}
+.demo-code{
+  background:var(--bg-deep);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;font-family:var(--font-mono);font-size:13px;line-height:1.8;overflow-x:auto;
+  box-shadow:0 20px 44px -22px rgba(0,0,0,.6);
+}
+.demo-code .pk{color:#ff7b72}
+.demo-code .k{color:var(--blue)}
+.demo-code .s{color:#a5d6ff}
+.demo-code .num{color:#79c0ff}
+.demo-code .b{color:#ffa657}
+.demo-code .cm{color:var(--text-faint)}
+
+/* ===== Products 产品 ===== */
+#products{background:var(--bg)}
+.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.prod-card{
+  background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:30px 26px;display:flex;flex-direction:column;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.prod-card:hover{transform:translateY(-5px);border-color:#3d4750;box-shadow:0 24px 46px -24px rgba(0,0,0,.7)}
+.prod-icon{
+  width:52px;height:52px;border-radius:12px;display:grid;place-items:center;
+  background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.28);color:var(--accent);
+  margin-bottom:22px;
+}
+.prod-icon svg{width:24px;height:24px}
+.prod-card h3{font-size:20px;font-weight:600;display:flex;align-items:baseline;gap:10px}
+.prod-card h3 .en{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);letter-spacing:.08em;font-weight:500}
+.prod-tags{display:flex;gap:7px;margin:12px 0 14px;flex-wrap:wrap}
+.prod-tags span{font-family:var(--font-mono);font-size:11px;color:var(--blue);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.22);padding:2px 9px;border-radius:5px;letter-spacing:.06em}
+.prod-card p{color:var(--text-dim);font-size:14.5px;flex:1;text-wrap:pretty}
+.prod-link{display:inline-flex;align-items:center;gap:7px;margin-top:20px;font-size:14px;color:var(--accent);font-weight:500}
+.prod-link svg{width:15px;height:15px;transition:transform .18s}
+.prod-card:hover .prod-link svg{transform:translateX(3px)}
+.prod-link .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* ===== Research 方法论 ===== */
+#research{background:#0a0e13}
+.res-motto{
+  text-align:center;margin-top:20px;
+  font-size:clamp(22px,3.4vw,34px);font-weight:600;color:var(--text);
+}
+.res-motto .term{font-family:var(--font-mono);color:var(--accent)}
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:60px}
+.res-card{
+  background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:30px 26px;transition:border-color .2s,transform .2s;
+}
+.res-card:hover{border-color:#3d4750;transform:translateY(-4px)}
+.res-card .num{font-family:var(--font-mono);font-size:13px;color:var(--accent);letter-spacing:.14em}
+.res-card h4{font-size:19px;font-weight:600;margin:14px 0 10px;display:flex;align-items:center;gap:10px}
+.res-card h4 .en{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);font-weight:500;letter-spacing:.1em}
+.res-card p{color:var(--text-dim);font-size:14.5px;text-wrap:pretty}
+.res-verify{
+  margin-top:56px;text-align:center;
+}
+.res-verify .term{
+  display:inline-block;background:var(--bg-deep);border:1px solid var(--border);
+  border-radius:10px;padding:14px 26px;font-family:var(--font-mono);font-size:13.5px;color:var(--text-dim);
+}
+.res-verify .term .ok{color:var(--accent)}
+
+/* ===== About 关于 ===== */
+#about{background:var(--bg)}
+.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;margin-top:56px;align-items:start}
+.about-text p{color:var(--text-dim);font-size:16px;margin-bottom:18px;text-wrap:pretty}
+.about-text p strong{color:var(--text);font-weight:600}
+.about-list{margin-top:10px;display:flex;flex-direction:column;gap:12px}
+.about-list li{display:flex;gap:13px;align-items:flex-start;color:var(--text-dim);font-size:15px}
+.about-list li svg{width:17px;height:17px;flex:none;margin-top:4px;color:var(--accent)}
+.about-panel{
+  background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px 26px;
+}
+.about-panel h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:18px;letter-spacing:.02em}
+.about-rows{display:flex;flex-direction:column}
+.about-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px dashed var(--border-soft)}
+.about-row:last-child{border-bottom:none}
+.about-row .k{color:var(--text-faint);font-size:14px}
+.about-row .v{font-family:var(--font-mono);font-size:13.5px;color:var(--text)}
+.about-row .v a:hover{color:var(--accent)}
+.about-row .v .arrow{color:var(--text-faint)}
+.about-quote{margin-top:22px;border-left:2px solid var(--accent);padding:6px 0 6px 16px;color:var(--text-dim);font-size:14px;line-height:1.8}
+.about-quote .q{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);display:block;margin-bottom:8px;letter-spacing:.12em}
+
+/* ===== Footer ===== */
+footer{border-top:1px solid var(--border-soft);background:var(--bg-deep);padding:52px 0 40px}
+.foot-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:40px;flex-wrap:wrap}
+.foot-brand .logo{margin-bottom:12px}
+.foot-brand p{color:var(--text-faint);font-size:13.5px;max-width:300px}
+.foot-col h5{font-size:13px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:14px;font-weight:600}
+.foot-col ul{display:flex;flex-direction:column;gap:9px}
+.foot-col a{font-size:14px;color:var(--text-dim);transition:color .16s}
+.foot-col a:hover{color:var(--accent)}
+.foot-bottom{margin-top:44px;padding-top:24px;border-top:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.foot-bottom p{color:var(--text-faint);font-size:13px}
+.foot-bottom .mono{font-family:var(--font-mono);font-size:12px}
+
+/* ===== 滚动显现动画 ===== */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ===== 响应式 ===== */
+@media (max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .sys-grid{grid-template-columns:1fr;gap:40px}
+  .data-pipe{grid-template-columns:repeat(3,1fr);row-gap:52px}
+  .data-pipe .pipe-arrow{display:none}
+  .data-demo{grid-template-columns:1fr;gap:36px}
+  .prod-grid{grid-template-columns:1fr;max-width:520px}
+  .res-grid{grid-template-columns:1fr;max-width:520px}
+  .about-grid{grid-template-columns:1fr;gap:40px}
+  section{padding:84px 0}
+}
+@media (max-width:720px){
+  .nav-links{display:none}
+  .nav-cta{display:none}
+  .nav-burger{display:grid}
+  .nav-links.open{
+    display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;
+    background:rgba(13,17,23,.97);border-bottom:1px solid var(--border);
+    padding:12px 20px 18px;gap:4px;align-items:stretch;
+  }
+  .nav-links.open a{padding:12px 8px}
+  .data-pipe{grid-template-columns:repeat(2,1fr)}
+  .hero{padding:84px 0 64px}
+  .console-main{grid-template-columns:1fr}
+  .console-side{display:flex;border-right:none;border-bottom:1px solid var(--border-soft);padding:8px;overflow-x:auto}
+  .console-side .side-item{white-space:nowrap;padding:8px 12px;border-left:none;border-bottom:2px solid transparent}
+  .console-side .side-item.active{border-left:none;border-bottom:2px solid var(--accent)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="logo" aria-label="天网系统 TIANNET 首页">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.4" fill="#3fb950"/><circle cx="4.5" cy="5.5" r="2.2" fill="#58a6ff"/><circle cx="19.5" cy="6" r="2.2" fill="#8b949e"/><circle cx="5" cy="19" r="2.2" fill="#8b949e"/><circle cx="19" cy="18.5" r="2.2" fill="#58a6ff"/><path d="M6.4 7 10.4 10.4M17.6 7.6 13.6 10.6M6.7 17.2l4.8-2.4M17.4 16.8l-4.8-2.6" stroke="#3fb950" stroke-width="1.1" stroke-linecap="round" opacity=".75"/></svg>
+      </span>
+      天网系统<span class="en">TIANNET</span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="主导航">
+      <a href="#system">系统<span class="en">SYSTEM</span></a>
+      <a href="#data">数据<span class="en">DATA</span></a>
+      <a href="#products">产品<span class="en">PRODUCTS</span></a>
+      <a href="#research">方法论<span class="en">RESEARCH</span></a>
+      <a href="#about">关于<span class="en">ABOUT</span></a>
+    </nav>
+    <a href="#products" class="nav-cta">进入控制台</a>
+    <button class="nav-burger" id="navBurger" aria-label="打开菜单" aria-expanded="false" aria-controls="navLinks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===== Hero ===== -->
+<section class="hero grid-bg" style="padding-top:0">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>TIANNET · 互联网基础设施观测系统</span>
+      <h1 class="hero-title">天网系统<span class="grad">，看见互联网的每一层</span></h1>
+      <p class="hero-sub">连接互联网数据，理解网络世界</p>
+      <p class="hero-desc">通过数据、证据、关系与变化，观测互联网基础设施的每一层。让每一次连接、每一项资产、每一处变化，都成为可验证的事实。</p>
+      <div class="hero-ctas">
+        <a href="#products" class="btn btn-primary">
+          开始探索
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#system" class="btn btn-ghost">查看系统架构 <span class="kbd">↧</span></a>
+      </div>
+    </div>
+
+    <div>
+      <div class="term" role="img" aria-label="终端示例：tiannet probe 命令输出">
+        <div class="term-bar">
+          <span class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>
+          <span class="title">tiannet@observatory: ~/probe</span>
+        </div>
+        <div class="term-body">
+          <div class="line"><span class="prompt">$</span> <span class="path">tiannet</span> <span class="cmd">probe --target example.com --layers all</span></div>
+          <div class="line"><span class="dim"># 正在接入天网观测层 ...</span></div>
+          <div class="line"><span class="ok">✓</span> <span class="cmd">解析域名</span> <span class="dim">→</span> example.com <span class="dim">· 3 条 A 记录</span></div>
+          <div class="line"><span class="ok">✓</span> <span class="cmd">识别主机</span> <span class="dim">→</span> nginx/1.24 <span class="dim">· TLS 1.3 · 证书有效</span></div>
+          <div class="line"><span class="ok">✓</span> <span class="cmd">关联资产</span> <span class="dim">→</span> 2 台服务器 <span class="dim">· 3 个证书 · 1 个 CDN</span></div>
+          <div class="line"><span class="ok">✓</span> <span class="cmd">变化检测</span> <span class="dim">→</span> 24h 内 <span class="ok">1</span> 处变更 <span class="dim">· 已入证据链</span></div>
+          <div class="line"><span class="dim">---</span></div>
+          <div class="line indent"><span class="ok">情报已生成</span> <span class="dim">· 证据 12 条 · 可追溯 · 可复现</span></div>
+          <div class="line"><span class="prompt">$</span><span class="term-cursor"></span></div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="num">3 层</div><div class="lab">观测维度 · 域名 / 主机 / 网络</div></div>
+        <div class="stat"><div class="num">100%</div><div class="lab">结论携带证据链</div></div>
+        <div class="stat"><div class="num">1 套</div><div class="lab">共享数据 / 情报标准</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== System 系统 ===== -->
+<section id="system">
+  <div class="wrap">
+    <span class="section-label">System · 系统</span>
+    <h2 class="title">互联网是一个系统</h2>
+    <p class="lead">从网站到基础设施，每一层都连接着下一层。<strong style="color:var(--accent)">连接本身，就是数据。</strong></p>
+
+    <div class="sys-grid">
+      <div class="sys-copy">
+        <p class="lead" style="font-size:15.5px">天网不把网站当成孤立的页面，而是把它放回真实的网络结构中：内容由域名承载，域名解析到主机，主机挂接在网络之上。每一层都记录着与下一层的连接，形成一张持续生长的互联网对象图谱。</p>
+        <div class="sys-points">
+          <div class="sys-point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span><strong style="color:var(--text)">分层观测</strong> —— 内容、域名、主机、网络四层独立建模，互不混淆。</span>
+          </div>
+          <div class="sys-point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span><strong style="color:var(--text)">连接即数据</strong> —— 层与层之间的引用、解析、归属关系，都被记录为结构化证据。</span>
+          </div>
+          <div class="sys-point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span><strong style="color:var(--text)">对象图谱</strong> —— 同一个对象在多产品间共享同一身份，数据不重复、结论可交叉验证。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 控制台面板：左侧导航 + 右侧内容 -->
+      <div class="console">
+        <div class="console-head">
+          <span>天网对象图谱</span>
+          <span class="tabs"><span class="tab">图谱</span><span class="tab">证据</span></span>
+        </div>
+        <div class="console-main">
+          <div class="console-side">
+            <div class="side-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg>内容层</div>
+            <div class="side-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>域名层</div>
+            <div class="side-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>主机层</div>
+            <div class="side-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>网络层</div>
+          </div>
+          <div class="console-content">
+            <div class="cc-row"><span class="k">对象</span><span class="v">example.com</span></div>
+            <div class="cc-row"><span class="k">层级</span><span class="v tag">CONTENT</span></div>
+            <div class="cc-row"><span class="k">页面</span><span class="v">2,384</span></div>
+            <div class="cc-row"><span class="k">外链</span><span class="v">1,127</span></div>
+            <div class="cc-row"><span class="k">承载域名</span><span class="v ok">example.com</span></div>
+            <div class="cc-row"><span class="k">状态</span><span class="v ok">● 已观测</span></div>
+            <div class="cc-row"><span class="k">证据</span><span class="v">12 条</span></div>
+          </div>
+        </div>
+        <div class="console-foot"><span class="ok">●</span> 图谱实时同步 · 同一对象多产品共享</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Data 数据 ===== -->
+<section id="data">
+  <div class="wrap">
+    <span class="section-label">Data · 数据</span>
+    <h2 class="title">数据 → 情报</h2>
+    <p class="lead">原始数据经过证据提取、实体识别、关系分析与变化检测，形成可追溯的互联网情报。这是一条从「看到」到「理解」的处理链路。</p>
+
+    <div class="data-pipe">
+      <div class="pipe-step">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-6"/><path d="M4.5 11.5v6c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-6"/></svg></span>
+        <span class="n">STEP 01</span>
+        <h4>原始数据<span class="en">RAW</span></h4>
+        <p>公开数据源持续采集，覆盖 DNS、证书、页面与网络信息。</p>
+      </div>
+      <span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+
+      <div class="pipe-step">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <span class="n">STEP 02</span>
+        <h4>证据提取<span class="en">EVIDENCE</span></h4>
+        <p>去噪、去重、校验，为每条数据打上来源与时间戳。</p>
+      </div>
+      <span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+
+      <div class="pipe-step">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="16.5" cy="15.5" r="3.2"/><path d="m6.8 19 2.2-2.2M18.8 5.8 16.5 8.1" opacity=".6"/></svg></span>
+        <span class="n">STEP 03</span>
+        <h4>实体识别<span class="en">ENTITY</span></h4>
+        <p>识别域名、IP、证书、组织等实体，建立统一对象身份。</p>
+      </div>
+      <span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+
+      <div class="pipe-step">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2 19 19M19 5l-2.8 2.8M7.8 16.2 5 19"/></svg></span>
+        <span class="n">STEP 04</span>
+        <h4>关系分析<span class="en">RELATION</span></h4>
+        <p>建立解析、归属、引用等连接，还原真实网络结构。</p>
+      </div>
+      <span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+
+      <div class="pipe-step">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="m5.6 5.6 2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg></span>
+        <span class="n">STEP 05</span>
+        <h4>变化检测<span class="en">CHANGE</span></h4>
+        <p>记录每一次变动与影响范围，标注时间与触发来源。</p>
+      </div>
+      <span class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+
+      <div class="pipe-step">
+        <span class="icon" style="color:#0d1117;background:var(--accent);border-color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
+        <span class="n">STEP 06</span>
+        <h4>互联网情报<span class="en">INTEL</span></h4>
+        <p>输出带证据链、可追溯可复现的结论，直接可用。</p>
+      </div>
+    </div>
+
+    <div class="data-demo">
+      <div class="demo-copy">
+        <h3>每条结论，都是一份可验证的记录</h3>
+        <p>天网输出的情报不是一句「结论」，而是一份携带完整证据链的结构化记录：谁观测的、何时观测、依据什么、如何复现，全部留痕。任何疑问都可以回溯到原始数据。</p>
+      </div>
+      <pre class="demo-code"><span class="cm">// 情报记录 · 可追溯</span>
+{
+  <span class="k">"entity"</span>: <span class="s">"example.com"</span>,
+  <span class="k">"layer"</span>: <span class="s">"domain"</span>,
+  <span class="k">"evidence"</span>: [
+    { <span class="k">"type"</span>: <span class="s">"dns_a"</span>, <span class="k">"value"</span>: <span class="s">"93.184.216.34"</span>, <span class="k">"ts"</span>: <span class="num">2026-08-31T12:00Z</span> }
+  ],
+  <span class="k">"changes"</span>: <span class="num">1</span>,
+  <span class="k">"traceable"</span>: <span class="pk">true</span>,
+  <span class="k">"reproducible"</span>: <span class="pk">true</span>
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Products 产品 ===== -->
+<section id="products">
+  <div class="wrap">
+    <span class="section-label">Products · 产品</span>
+    <h2 class="title">一个系统，多种产品</h2>
+    <p class="lead">天网是总体系统，每个产品都是系统的一个能力面，共享同一套数据、证据与情报标准。用同一个底层，做不同的事。</p>
+
+    <div class="prod-grid">
+      <article class="prod-card reveal">
+        <span class="prod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8.5 11 10 12.5 13.5 9" opacity=".8"/></svg></span>
+        <h3>SiteIntel <span class="en">SITE AUDIT</span></h3>
+        <div class="prod-tags"><span>SEO</span><span>AUDIT</span><span>CONTENT</span></div>
+        <p>面向网站的 SEO 与基础设施审计。逐页扫描、定位问题、生成可执行的修复清单，让每一个技术问题都有据可查。</p>
+        <a class="prod-link" href="#about"><span class="dot"></span>了解产品 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </article>
+
+      <article class="prod-card reveal">
+        <span class="prod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M19.1 4.9l-2.9 2.9M7.8 16.2l-2.9 2.9" opacity=".8"/></svg></span>
+        <h3>DUONIU <span class="en">DOMAIN</span></h3>
+        <div class="prod-tags"><span>DOMAIN</span><span>BULK</span><span>WHOIS</span></div>
+        <p>批量域名挖掘与评估。从注册、解析到权重与流量，帮助你快速判断域名价值与风险，让域名决策不再靠感觉。</p>
+        <a class="prod-link" href="#about"><span class="dot"></span>了解产品 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </article>
+
+      <article class="prod-card reveal">
+        <span class="prod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.4 6.5 11.2 7.4 12a1 1 0 0 0 1.2 0c.9-.8 7.4-6.6 7.4-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h3>IPCESU <span class="en">IP TOOLS</span></h3>
+        <div class="prod-tags"><span>IP</span><span>WHOIS</span><span>NETWORK</span></div>
+        <p>轻量的 IP 查询与网络诊断工具。覆盖归属、定位、Whois 与端口探测，随手可用的基础设施工具箱。</p>
+        <a class="prod-link" href="#about"><span class="dot"></span>了解产品 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Research 方法论 ===== -->
+<section id="research">
+  <div class="wrap">
+    <span class="section-label" style="justify-content:center">Research · 方法论</span>
+    <h2 class="title" style="text-align:center">开放的方法论</h2>
+    <p class="res-motto"><span class="term">可观测</span> · <span class="term">可溯源</span> · <span class="term">可复现</span></p>
+    <p class="lead" style="text-align:center;margin:14px auto 0">我们相信，好的系统不是黑箱。天网的每一条结论，都经得起反问与复核。</p>
+
+    <div class="res-grid">
+      <article class="res-card reveal">
+        <span class="num">01 / OBSERVABLE</span>
+        <h4>可观测<span class="en">OBSERVABLE</span></h4>
+        <p>一切结论都由原始数据支撑，不依赖猜测。看到什么，就记录什么。</p>
+      </article>
+      <article class="res-card reveal">
+        <span class="num">02 / TRACEABLE</span>
+        <h4>可溯源<span class="en">TRACEABLE</span></h4>
+        <p>每条结论都携带证据链，可回溯到数据源头，疑问随时可以追查。</p>
+      </article>
+      <article class="res-card reveal">
+        <span class="num">03 / REPRODUCIBLE</span>
+        <h4>可复现<span class="en">REPRODUCIBLE</span></h4>
+        <p>相同输入得到相同输出，方法与数据均可复核，结论经得起重跑。</p>
+      </article>
+    </div>
+
+    <div class="res-verify">
+      <span class="term"><span class="ok">$</span> tiannet verify --evidence 0x3f9a <span class="ok">✓ 已验证 · 证据链完整</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== About 关于 ===== -->
+<section id="about">
+  <div class="wrap">
+    <span class="section-label">About · 关于</span>
+    <h2 class="title">关于天网</h2>
+    <p class="lead">天网（TIANNET）是一套面向互联网基础设施的观测与情报系统，由独立开发者构建并持续维护。</p>
+
+    <div class="about-grid">
+      <div class="about-text">
+        <p><strong>我们相信，互联网值得被理解。</strong>每一层结构、每一条连接、每一次变化，都不是孤立的现象，而是可以被观察、被记录、被验证的事实。天网要做的，就是把「看不见的网络」变成「查得到的图谱」。</p>
+        <p>天网坚持<strong style="color:var(--accent)">开放的方法论</strong>：可观测、可溯源、可复现。所有结论都附带证据链，任何疑问都可以回溯到原始数据；方法与数据经得起复核与重跑，而不是依赖黑箱式的「经验判断」。</p>
+        <p>在产品层面，天网保持小而精的形态——SiteIntel 管好网站审计，DUONIU 管好域名评估，IPCESU 管好 IP 诊断。每个产品独立可用，又共享同一套数据与情报标准。</p>
+        <ul class="about-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>面向网站与基础设施运营者，提供可执行的观测结论</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>坚持证据链设计，每个结论都可追溯、可复现</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>保持独立与开放，欢迎交流与共建</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="about-panel">
+        <h4>联系我们 · CONTACT</h4>
+        <div class="about-rows">
+          <div class="about-row"><span class="k">官方网站</span><span class="v">tiannet<span class="arrow">.</span>dev</span></div>
+          <div class="about-row"><span class="k">站点审计</span><span class="v">siteintel<span class="arrow">.</span>cc</span></div>
+          <div class="about-row"><span class="k">域名工具</span><span class="v">duoniu<span class="arrow">.</span>cc</span></div>
+          <div class="about-row"><span class="k">IP 工具</span><span class="v">ipcesu<span class="arrow">.</span>com</span></div>
+          <div class="about-row"><span class="k">反馈 / 合作</span><span class="v"><a href="mailto:hello@tiannet.dev">hello@tiannet.dev</a></span></div>
+        </div>
+        <div class="about-quote">
+          <span class="q">OUR BELIEF</span>
+          连接互联网数据，理解网络世界。把每一次观测，沉淀成经得起验证的事实。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-inner">
+      <div class="foot-brand">
+        <a href="#top" class="logo">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.4" fill="#3fb950"/><circle cx="4.5" cy="5.5" r="2.2" fill="#58a6ff"/><circle cx="19.5" cy="6" r="2.2" fill="#8b949e"/><circle cx="5" cy="19" r="2.2" fill="#8b949e"/><circle cx="19" cy="18.5" r="2.2" fill="#58a6ff"/><path d="M6.4 7 10.4 10.4M17.6 7.6 13.6 10.6M6.7 17.2l4.8-2.4M17.4 16.8l-4.8-2.6" stroke="#3fb950" stroke-width="1.1" stroke-linecap="round" opacity=".75"/></svg>
+          </span>
+          天网系统<span class="en">TIANNET</span>
+        </a>
+        <p>连接互联网数据，理解网络世界。<br>观测、记录并理解互联网基础设施的每一层。</p>
+      </div>
+      <div class="foot-col">
+        <h5>系统 · SYSTEM</h5>
+        <ul>
+          <li><a href="#system">分层架构</a></li>
+          <li><a href="#data">数据处理链路</a></li>
+          <li><a href="#research">开放方法论</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>产品 · PRODUCTS</h5>
+        <ul>
+          <li><a href="#products">SiteIntel</a></li>
+          <li><a href="#products">DUONIU</a></li>
+          <li><a href="#products">IPCESU</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>关于 · ABOUT</h5>
+        <ul>
+          <li><a href="#about">关于天网</a></li>
+          <li><a href="#about">联系我们</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p>© 2026 天网系统 TIANNET · 保留所有权利</p>
+      <p class="mono">observable · traceable · reproducible</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ===== 移动端导航 ===== */
+var burger = document.getElementById('navBurger');
+var links = document.getElementById('navLinks');
+burger.addEventListener('click', function(){
+  var open = links.classList.toggle('open');
+  burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  burger.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+});
+links.querySelectorAll('a').forEach(function(a){
+  a.addEventListener('click', function(){
+    links.classList.remove('open');
+    burger.setAttribute('aria-expanded','false');
+  });
+});
+
+/* ===== 滚动显现 ===== */
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(function(el){el.classList.add('in')});
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+  els.forEach(function(el){io.observe(el)});
+})();
+</script>
+</body>
+</html>
